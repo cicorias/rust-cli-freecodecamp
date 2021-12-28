@@ -1,0 +1,4 @@
+{
+    "rust-client.engine": "rls",
+    "rust-analyzer.updates.askBeforeDownload": false
+}
