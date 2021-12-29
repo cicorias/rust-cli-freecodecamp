@@ -22,17 +22,20 @@ fn main() {
     }
     
     match get_dir() {
-        Ok(_) => println!("got it..."),
+        Ok(r) => println!("got it... {}", r),
         Err(why) => println!("An error occurred: {}", why),
     }
     
     println!("{:?}, {:?}", action, "item");
 }
 
-fn get_dir() -> std::io::Result<()> {
-    let path = env::current_dir()?;
-    println!("The current directory is {}", path.display());
-    Ok(())
+fn get_dir() -> Result<String, std::io::Error> {
+    let path =  match env::current_dir() {
+        Ok(path) => path,
+        Err(e) => return Err(e),
+    };
+    Ok(path.display().to_string())
+    
 }
 
 
