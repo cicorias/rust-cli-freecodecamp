@@ -21,12 +21,13 @@ fn main() {
         }
     }
     
-    match get_dir() {
-        Ok(r) => println!("got it... {}", r),
-        Err(why) => println!("An error occurred: {}", why),
-    }
+    let current_dir = get_dir().unwrap();
+    // {
+    //     Ok(r) => println!("got it... {}", r),
+    //     Err(why) => println!("An error occurred: {}", why),
+    // };
     
-    println!("{:?}, {:?}", action, "item");
+    println!("{:?}, {:?}", action, current_dir);
 }
 
 fn get_dir() -> Result<String, std::io::Error> {
@@ -35,7 +36,6 @@ fn get_dir() -> Result<String, std::io::Error> {
         Err(e) => return Err(e),
     };
     Ok(path.display().to_string())
-    
 }
 
 
