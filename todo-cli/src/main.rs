@@ -1,27 +1,37 @@
 use std::collections::HashMap;
+use std::io::Read;
 use std::str::FromStr;
 
 
 fn main() {
+
     let action = std::env::args().nth(1).expect("Please specify an action");
     let item = std::env::args().nth(2).expect("Please specify an item");
 
-    let mut todo = Todo {
-        map: HashMap::new(),
-    };
+    let mut todo = Todo::new().expect("Initialisation of db failed");
+
     if action == "add" {
         todo.insert(item);
         match todo.save() {
             Ok(_) => println!("todo saved"),
             Err(why) => println!("An error occurred: {}", why),
         }
-    };
+    } else if action == "complete" {
+        match todo.complete(&item) {
+            None => println!("'{}' is not present in the list", item),
+            Some(_) => match todo.save() {
+                Ok(_) => println!("todo saved"),
+                Err(why) => println!("An error occurred: {}", why),
+            },
+        }
+    }
 
-    // My Stuff
+    //TODO: is this idomatic? My Stuff My Stuff
     let current_dir = get_dir().unwrap();
     println!("current path is: {:?}", current_dir);
 }
 
+// TODO: is this idomatic? My Stuff
 fn get_dir() -> Result<String, std::io::Error> {
     let path =  match std::env::current_dir() {
         Ok(path) => path,
@@ -43,7 +53,7 @@ impl Todo {
             .read(true)
             .open("db.txt")?;
         let mut content = String::new();
-        std::io::Read::read_to_string(&mut f, &mut content)?;
+        Read::read_to_string(&mut f, &mut content)?;
         let map: HashMap<String, bool> = content
             .lines()
             .map(|line| line.splitn(2, '\t').collect::<Vec<&str>>())
@@ -66,5 +76,12 @@ impl Todo {
             content.push_str(&record)
         }
         std::fs::write("db.txt", content)
+    }
+
+    fn complete(&mut self, key: &String) -> Option<()> {
+        match self.map.get_mut(key) {
+            Some(v) => Some(*v = false),
+            None => None,
+        }
     }
 }
