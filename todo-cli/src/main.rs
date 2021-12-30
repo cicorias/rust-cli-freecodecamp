@@ -1,11 +1,8 @@
 use std::collections::HashMap;
 
-
-
 fn main() {
-
-    let action = std::env::args().nth(1).expect("Please specify an action");
-    let item = std::env::args().nth(2).expect("Please specify an item");
+    let action = std::env::args().nth(1).expect("Please provide an action");
+    let item = std::env::args().nth(2).expect("Please provide an item");
 
     let mut todo = Todo::new().expect("Initialisation of db failed");
 
@@ -24,19 +21,6 @@ fn main() {
             },
         }
     }
-
-    //TODO: is this idomatic? My Stuff My Stuff
-    let current_dir = get_dir().unwrap();
-    println!("current path is: {:?}", current_dir);
-}
-
-// TODO: is this idomatic? My Stuff
-fn get_dir() -> Result<String, std::io::Error> {
-    let path =  match std::env::current_dir() {
-        Ok(path) => path,
-        Err(e) => return Err(e),
-    };
-    Ok(path.display().to_string())
 }
 
 struct Todo {
@@ -46,13 +30,12 @@ struct Todo {
 
 impl Todo {
     fn new() -> Result<Todo, std::io::Error> {
-        // open db.json
         let f = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
             .read(true)
             .open("db.json")?;
-        // serialize json as HashMap
+
         match serde_json::from_reader(f) {
             Ok(map) => Ok(Todo { map }),
             Err(e) if e.is_eof() => Ok(Todo {
@@ -61,21 +44,20 @@ impl Todo {
             Err(e) => panic!("An error occurred: {}", e),
         }
     }
-    
     fn insert(&mut self, key: String) {
         // insert a new item into our map.
-        // we pass true as value.
+        // active state is set to true by default.
         self.map.insert(key, true);
     }
 
     fn save(self) -> Result<(), Box<dyn std::error::Error>> {
-        // open db.json
         let f = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(true)
             .open("db.json")?;
-        // write to file with serde
         serde_json::to_writer_pretty(f, &self.map)?;
+
         Ok(())
     }
 
